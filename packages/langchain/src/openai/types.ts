@@ -35,6 +35,11 @@ export type AzureOpenAiChatModelParams = Pick<
    * If `undefined` the `strict` argument will not be passed to OpenAI.
    */
   supportsStrictToolCalling?: boolean;
+  /**
+   * Whether the model should stream all results.
+   * Defaults to `false`.
+   */
+  streaming?: boolean;
 } & BaseChatModelParams &
   ModelConfig<AzureOpenAiChatModel> &
   ResourceGroupConfig;
@@ -63,6 +68,7 @@ export type AzureOpenAiChatCallOptions = BaseChatModelCallOptions &
     | 'function_call'
   > & {
     strict?: boolean;
+    stream?: boolean;
     tools?: ChatAzureOpenAIToolType[];
     promptIndex?: number;
     requestConfig?: CustomRequestConfig;

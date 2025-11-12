@@ -389,6 +389,82 @@ describe('orchestration service client', () => {
       expect(finalOutput).toMatchSnapshot();
     });
 
+    it('supports auto-streaming responses', async () => {
+      mockInference(
+        {
+          data: constructCompletionPostRequest(
+            {
+              ...config,
+              promptTemplating: {
+                ...config.promptTemplating,
+                prompt: {
+                  template: messages
+                }
+              }
+            },
+            { messages: [] },
+            true
+          )
+        },
+        {
+          data: mockResponseStream,
+          status: 200
+        },
+        endpoint
+      );
+
+      jest.spyOn(OrchestrationClient.prototype, '_streamResponseChunks');
+
+      const client = new OrchestrationClient(config, {
+        streaming: true
+      } as any);
+      expect(client.streaming).toBe(true);
+
+      const finalOutput = await client.invoke([
+        { role: 'user', content: 'Hello!' }
+      ]);
+
+      expect(finalOutput).toMatchSnapshot();
+      expect(client._streamResponseChunks).toHaveBeenCalled();
+    });
+
+    it('supports auto-streaming responses with invoke-stream', async () => {
+      mockInference(
+        {
+          data: constructCompletionPostRequest(
+            {
+              ...config,
+              promptTemplating: {
+                ...config.promptTemplating,
+                prompt: {
+                  template: messages
+                }
+              }
+            },
+            { messages: [] },
+            true
+          )
+        },
+        {
+          data: mockResponseStream,
+          status: 200
+        },
+        endpoint
+      );
+
+      jest.spyOn(OrchestrationClient.prototype, '_streamResponseChunks');
+
+      const client = new OrchestrationClient(config);
+
+      const finalOutput = await client.invoke(
+        [{ role: 'user', content: 'Hello!' }],
+        { stream: true }
+      );
+
+      expect(finalOutput).toMatchSnapshot();
+      expect(client._streamResponseChunks).toHaveBeenCalled();
+    });
+
     it('streams and aborts with a signal', async () => {
       mockInference(
         {

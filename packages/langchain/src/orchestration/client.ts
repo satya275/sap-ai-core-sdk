@@ -38,6 +38,8 @@ export class OrchestrationClient extends BaseChatModel<
   OrchestrationCallOptions,
   OrchestrationMessageChunk
 > {
+  streaming: boolean;
+
   constructor(
     public orchestrationConfig: LangChainOrchestrationModuleConfig,
     public langchainOptions: BaseChatModelParams = {},
@@ -54,6 +56,10 @@ export class OrchestrationClient extends BaseChatModel<
     };
 
     super(langchainOptions);
+
+    // Todo: Extend BaseChatModelParams?
+    this.streaming =
+      (langchainOptions as { streaming?: boolean })?.streaming ?? false;
   }
 
   _llmType(): string {
@@ -85,6 +91,19 @@ export class OrchestrationClient extends BaseChatModel<
     options: typeof this.ParsedCallOptions,
     runManager?: CallbackManagerForLLMRun
   ): Promise<ChatResult> {
+    if (options?.stream ?? this.streaming) {
+      let generation;
+      const stream = this._streamResponseChunks(messages, options, runManager);
+      for await (const chunk of stream) {
+        generation =
+          generation === undefined ? chunk : generation.concat(chunk);
+      }
+      if (generation === undefined) {
+        throw new Error('No chunks were generated from the stream.');
+      }
+      return { generations: [generation] };
+    }
+
     const { placeholderValues, customRequestConfig } = options;
     const allMessages = mapLangChainMessagesToOrchestrationMessages(messages);
     const mergedOrchestrationConfig = this.mergeOrchestrationConfig(options);
