@@ -224,6 +224,9 @@ importers:
       '@sap-ai-sdk/orchestration':
         specifier: workspace:^
         version: link:../packages/orchestration
+      '@sap-cloud-sdk/http-client':
+        specifier: ^4.1.2
+        version: 4.1.2
       '@sap/cds':
         specifier: ^9.4.4
         version: 9.4.4(@eslint/js@9.39.1)(express@5.1.0)
