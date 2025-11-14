@@ -1,4 +1,12 @@
 import cds from '@sap/cds';
+import {
+  getCustomerDataFromDatasphere as localGetCustomerDataFromDatasphere,
+  getDownloadlink as localGetDownloadlink,
+  getStatementOfAccountLink as localGetStatementOfAccountLink,
+  getUserInfoById as localGetUserInfoById,
+  validateInvoiceAvailability as localValidateInvoiceAvailability,
+  validateStatementOfAccount as localValidateStatementOfAccount
+} from './sf-connection';
 
 const SERVICE_CONFIG = cds.env.requires?.SUCCESS_FACTORS_SERVICE;
 const SERVICE_NAME =
@@ -31,7 +39,7 @@ export async function getUserInfoById(filterQuery: string): Promise<any[]> {
   if (Array.isArray(response)) {
     return response;
   }
-  return [];
+  return localGetUserInfoById(filterQuery);
 }
 
 export async function validateInvoiceAvailability(
@@ -43,7 +51,7 @@ export async function validateInvoiceAvailability(
   if (response && typeof response === 'object') {
     return response as { status?: string; message?: string };
   }
-  return {};
+  return localValidateInvoiceAvailability(invoiceNumber);
 }
 
 export async function getDownloadlink(
@@ -53,7 +61,7 @@ export async function getDownloadlink(
   if (response && typeof response === 'object') {
     return response as { downloadUrl?: string; url?: string };
   }
-  return {};
+  return localGetDownloadlink(invoiceNumber);
 }
 
 export async function validateStatementOfAccount(
@@ -73,7 +81,7 @@ export async function validateStatementOfAccount(
       formattedDate?: string;
     };
   }
-  return {};
+  return localValidateStatementOfAccount(companyCode, customerCode, asOfDate);
 }
 
 export async function getStatementOfAccountLink(
@@ -92,7 +100,7 @@ export async function getStatementOfAccountLink(
       formattedDate?: string;
     };
   }
-  return {};
+  return localGetStatementOfAccountLink(companyCode, customerCode, asOfDate);
 }
 
 export async function getCustomerDataFromDatasphere(
@@ -104,10 +112,5 @@ export async function getCustomerDataFromDatasphere(
   if (response && typeof response === 'object') {
     return response;
   }
-  return {
-    data: [],
-    formattedURL: '',
-    appliedParameters: {},
-    analysis: {}
-  };
+  return localGetCustomerDataFromDatasphere(analyticsQuery);
 }
