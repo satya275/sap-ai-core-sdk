@@ -1,0 +1,102 @@
+_schema-version: "3.1"
+ID: sample-cap-llm
+description: Sample CAP chatbot with SAP AI Core orchestration.
+version: 1.0.0
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npx cds build --production
+
+modules:
+  - name: sample-cap-llm-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: sample-cap-llm-auth
+      - name: sample-cap-llm-db
+      - name: sample-cap-llm-destination-service
+      - name: sample-cap-llm-ai-core
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+      keep-existing-routes: true
+      disk-quota: 1024M
+      memory: 512M
+    build-parameters:
+      builder: npm
+      ignore:
+        - .env
+        - node_modules/
+        - default-env.json
+
+  - name: sample-cap-llm-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: sample-cap-llm-db
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      ignore:
+        - node_modules/
+
+resources:
+  - name: sample-cap-llm-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-plan: application
+      service-name: sample-cap-llm-xsuaa
+      config:
+        tenant-mode: dedicated
+        xsappname: sample-cap-llm
+
+  - name: sample-cap-llm-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+
+  - name: sample-cap-llm-destination-service
+    type: org.cloudfoundry.managed-service
+    requires:
+      - name: srv-api
+    parameters:
+      config:
+        HTML5Runtime_enabled: true
+        init_data:
+          subaccount:
+            destinations:
+              - Authentication: NoAuthentication
+                HTML5.DynamicDestination: true
+                HTML5.ForwardAuthToken: true
+                HTML5.Timeout: 30000
+                Name: sample-cap-llm-srv
+                ProxyType: Internet
+                Type: HTTP
+                URL: ~{srv-api/srv-url}
+              - Authentication: NoAuthentication
+                Name: ui5
+                ProxyType: Internet
+                Type: HTTP
+                URL: https://ui5.sap.com
+            existing_destinations_policy: update
+        version: 1.0.0
+      service: destination
+      service-name: sample-cap-llm-destination
+      service-plan: lite
+
+  - name: sample-cap-llm-ai-core
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: aicore
+      service-plan: standard
+      service-name: sample-cap-llm-ai-core

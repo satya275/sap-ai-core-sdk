@@ -4,12 +4,26 @@ Sample CAP application written in TypeScript to demonstrate the usage of SAP Clo
 
 ### Table of Contents
 
+- [Configuration](#configuration)
 - [Local Deployment](#local-deployment)
 - [Remote Deployment](#remote-deployment)
+- [Multi-Target Application Deployment](#multi-target-application-deployment)
 - [Usage](#usage)
   - [`ai-api`](#ai-api)
   - [`foundation-models`](#foundation-models)
   - [`orchestration`](#orchestration)
+
+## Configuration
+
+The CAP chatbot uses SAP Cloud SDK for AI clients for chat completions, orchestration templates, and LangChain-powered RAG flows.
+Maintain the project-specific destinations and credentials in [`cdsrc.json`](./cdsrc.json):
+
+- Update the `GENERATIVE_AI_HUB` section with the Azure OpenAI deployments that should back chat, embedding, and orchestration calls.
+- Adjust the `SampleCapAzureOpenAIDestination` name if you already have a different AI Core destination in your landscape.
+- Provide the SuccessFactors connectivity parameters (destination or direct credentials) in the `SUCCESS_FACTORS_*` entries so that the chatbot can enrich answers with HR data.
+
+> [!TIP]
+> The `cdsc.beta.vectorType` flag must stay enabled so that CAP can persist embedding vectors generated through the LangChain pipeline in `srv/chatbot`.
 
 ## Local Deployment
 
@@ -42,6 +56,16 @@ Sample CAP application written in TypeScript to demonstrate the usage of SAP Clo
 5. Modify `services` and `routes` values in `manifest.yml`.
 6. Login using `cf login -a API_ENDPOINT -o ORG -s SPACE`.
 7. Deploy the application using `cf push`.
+
+## Multi-Target Application Deployment
+
+To deploy the project as an MTA archive instead of a plain Cloud Foundry application:
+
+1. Build the project artifacts (`pnpm build`).
+2. Package the archive with `mbt build` using the provided [`mta.yaml`](./mta.yaml).
+3. Deploy the generated `mtar` with `cf deploy mta_archives/sample-cap-llm_1.0.0.mtar`.
+
+The descriptor provisions XSUAA, HANA HDI, Destination, and AI Core service instances and wires them to the CAP service module generated under `gen/srv`.
 
 ## Usage
 

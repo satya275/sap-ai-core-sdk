@@ -1,0 +1,42 @@
+{
+  "cdsc": {
+    "beta": {
+      "vectorType": true
+    }
+  },
+  "requires": {
+    "GENERATIVE_AI_HUB": {
+      "CHAT_MODEL_NAME": "gpt-4o",
+      "CHAT_MODEL_DESTINATION_NAME": "SampleCapAzureOpenAIDestination",
+      "CHAT_MODEL_RESOURCE_GROUP": "default",
+      "CHAT_MODEL_API_VERSION": "2024-02-15-preview",
+      "EMBEDDING_MODEL_NAME": "text-embedding-3-small",
+      "EMBEDDING_MODEL_DESTINATION_NAME": "SampleCapAzureOpenAIDestination",
+      "EMBEDDING_MODEL_RESOURCE_GROUP": "default",
+      "EMBEDDING_MODEL_API_VERSION": "2023-05-15",
+      "ORCHESTRATION_MODEL_NAME": "gpt-4o",
+      "ORCHESTRATION_DESTINATION_NAME": "SampleCapAzureOpenAIDestination",
+      "ORCHESTRATION_RESOURCE_GROUP": "default"
+    },
+    "SampleCapAzureOpenAIDestination": {
+      "kind": "rest",
+      "credentials": {
+        "destination": "GENERATIVE_AI_HUB",
+        "requestTimeout": 600000
+      }
+    },
+    "SUCCESS_FACTORS_SERVICE": {
+      "name": "success-factors",
+      "kind": "rest",
+      "credentials": {
+        "destination": "SUCCESS_FACTORS_CREDENTIALS",
+        "requestTimeout": 600000
+      }
+    },
+    "SUCCESS_FACTORS_CREDENTIALS": {
+      "AUTHORIZATION_HEADER": "Basic <BASE64_ENCODED_CREDENTIALS>",
+      "USER_ID": "<USER_ID>",
+      "URL": "https://<SUCCESS_FACTORS_HOST>"
+    }
+  }
+}
